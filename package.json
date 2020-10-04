@@ -1,0 +1,36 @@
+{
+  "name": "social-media-server",
+  "version": "1.0.0",
+  "description": "server for social my social media webapp",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amanjain4103/social-media-server.git"
+  },
+  "keywords": [
+    "nodejs"
+  ],
+  "author": "Aman Jain",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/amanjain4103/social-media-server/issues"
+  },
+  "homepage": "https://github.com/amanjain4103/social-media-server#readme",
+  "dependencies": {
+    "@hapi/joi": "^17.1.1",
+    "bcrypt": "^5.0.0",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.10.7",
+    "twilio": "^3.49.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
