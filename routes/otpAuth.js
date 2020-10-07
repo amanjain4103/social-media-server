@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const config = require("../config");
+const dotenv = require("dotenv").config();
 
 router.post("/post",(req,res) => {
     res.send(req.body.otp);
@@ -9,7 +9,7 @@ router.get("/",(req,res) => {
     res.send("hello from otp auth routes")
 })
 
-const client = require("twilio")(config.accountSID, config.authToken)
+const client = require("twilio")(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN)
 
 // /login
     // phone Number
@@ -35,7 +35,7 @@ router.post("/send",(req,res) => {
 
         client
             .verify
-            .services(config.serviceID)
+            .services(process.env.SERVICE_ID)
             .verifications
             .create({
                 to: req.body.phonenumber,
@@ -74,10 +74,9 @@ router.post("/verify",(req,res) => {
 
     try {
         
-        
         client
             .verify
-            .services(config.serviceID)
+            .services(process.env.SERVICE_ID)
             .verificationChecks
             .create({
                 to: req.body.phonenumber,
