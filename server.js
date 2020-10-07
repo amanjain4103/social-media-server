@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const otpAuthRoutes = require("./routes/otpAuth");
 const usersRoute = require("./routes/usersRoute");
+const securedRoute = require("./routes/securedRoute");
 const dotenv = require("dotenv").config();
 
 const cors = require("cors");
@@ -28,6 +29,7 @@ app.use(express.json());
 // routes
 app.use("/otp",otpAuthRoutes);
 app.use("/users",usersRoute);
+app.use("/secured",securedRoute);
 
 app.get("/",(req,res) => {
     res.status(200).send("hello world");
@@ -41,3 +43,4 @@ app.listen(port, () => {
 // routes 
 // post => /otp/send => require body with phonenumber and channel
 // post => /otp/verify => requires body with phonenumber and code
+

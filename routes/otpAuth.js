@@ -40,24 +40,25 @@ router.post("/send",(req,res) => {
             .create({
                 to: req.body.phonenumber,
                 channel: req.body.channel
-            }, (error) => {
-                console.log(error)
-                console.log(req.body.phonenumber)
-                if(error) {
-                    res.status(400).send(error.message)
-                }
             })
             .then((data) => {
                 if(data) {
-                    res.status(200).send("otpSent");
+                    res.status(200).json({
+                        "message":"otpSent"
+                    });
                 }else {
-                    res.status(500).send("otpNotSent")
+                    res.status(200).json({
+                        "message":"otpNotSent"
+                    });
                 }
             })
     
     }
     catch (error) {
-        res.send(500).send("requestError")
+        console.log(error)
+        res.status(500).json({
+            "message":"requestError"
+        });
     }
 
 })
@@ -81,23 +82,25 @@ router.post("/verify",(req,res) => {
             .create({
                 to: req.body.phonenumber,
                 code: req.body.code
-            }, (error) => {
-                // console.log(error)
-                if(error) {
-                    res.status(400).send("invalidPhoneNumberOrCode")
-                }
             })
             .then((data) => {
                 if(data.status === "approved") {
-                    res.status(200).send("otpVerified");
+                    res.status(200).json({
+                        "message":"otpVerified"
+                    });
                 }else {
-                    res.status(500).send("otpNotVerified "+data)
+                    console.log(data)
+                    res.status(200).json({
+                        "message":"otpNotVerified"
+                    });
                 }
             })
             
         
     } catch (error) {
-        res.send(500).send("requestError")
+        res.status(500).json({
+            "message":"requestError"
+        });
     }
 
 })
