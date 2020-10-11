@@ -1,23 +1,43 @@
 const router = require("express").Router();
 const User = require("../model/User");
 const bcrypt = require("bcrypt");
-const { validateSignup, validateSignin } = require("../validation");
+const { validateSignup, validateSignin, validateEmail } = require("../validation");
 const jwt = require("jsonwebtoken");
 
 router.get("/", (req,res) => {
     res.send("hello from usersRoute")
 })
 
-// signup
-// signin
-// use jwt and cookies also
 
+// responses from signup
+//      validationMessage => var having a mesaage
+//      error occured while Finding Data!
+//      User Email already exists, Try to signin.
+//      error while encrypting password, Try again!
+//      successfulSignup
+//      error occured while Saving Data!
+//      error occured at server! Please try again later
+
+// signup here
 router.post("/signup",(req,res) => {
+
+    // this will handle redirect, using this way to make it more flexible
+    // you can use req.body directly while posting /users/signup or use query string while redirect
+    if(req.query.firstName) {
+        req.body = {
+            firstName: req.query.firstName,
+            lastName: req.query.lastName,
+            email: req.query.email,
+            password: req.query.password
+        }
+    }
 
     // validation
     var validationMessage = validateSignup(req.body);
     if(validationMessage) {
-        res.send(validationMessage)
+        res.json({
+            "message":validationMessage
+        });
     }
 
     // hashing password
@@ -56,14 +76,16 @@ router.post("/signup",(req,res) => {
                                     firstName: req.body.firstName,
                                     lastName: req.body.lastName,
                                     email: req.body.email,
-                                    password: hashedPassword
+                                    password: hashedPassword,
+                                    avatarSrc: "https://static.thenounproject.com/png/363640-200.png"
+                                    
                                 })
 
                                 newUser.save((errorWHileSaving,doc) => {
                                     if(doc) {
                                         // console.log(doc);
                                         res.json({
-                                            "message":"successful signup!"
+                                            "message":"successfulSignup"
                                         });
                                     }else {
                                         // console.log(errorWHileSaving)
@@ -133,12 +155,17 @@ router.post("/signin",(req,res) => {
 
                                 // password matched hence the user authentication successful 
                                 // console.log(userData);
+                                
                                 res.header("auth-token",token).json({
-                                    "message":"successful signin",
+                                    "message":"successfulSignin",
                                     "authToken":token,
                                     "firstName":userData.firstName,
                                     "lastName":userData.lastName,
-                                    "email":userData.email
+                                    "email":userData.email,
+                                    "avatarSrc":userData.avatarSrc,
+                                    "numberOfPosts":userData.numberOfPosts,
+                                    "numberOfLikes":userData.numberOfLikes
+                                    
                                 });
                                 
                             }else {
@@ -176,5 +203,84 @@ router.post("/signin",(req,res) => {
         });
     }
 })
+
+router.get("/getuser", (req,res) => {
+    
+    console.log(req.query);
+    
+    // validation
+    var validationMessage = validateEmail(req.query);
+    if(validationMessage) {
+        res.json({
+            "message":validationMessage
+        });
+    }
+    
+    const userEmail = req.query.email;
+
+    // start
+
+    try {
+
+        User.findOne({"email":userEmail},(errorWhileFinding,userData) => {
+            
+            if(errorWhileFinding) {
+                // console.log("Can't compare with database right now! Please try again later");
+                res.json({
+                    "message":"Can't compare with database right now! Please try again later"
+                });
+            }else if(userData) {
+
+                if(userData!==null) {
+                    if(userData!=="") {
+
+                        res.json({
+                            "message":"userDataFound",
+                            "firstName":userData.firstName,
+                            "lastName":userData.lastName,
+                            "email":userData.email,
+                            "avatarSrc":userData.avatarSrc,
+                            "numberOfPosts":userData.numberOfPosts,
+                            "numberOfLikes":userData.numberOfLikes,
+                            "posts":userData.posts
+                            
+                        });
+
+                    }else {
+                        res.json({
+                            "message":"The user Doesn't exists or Email is wrong! Try Again"
+                        });
+                    }
+                }else {
+                    res.json({
+                        "message":"The user Doesn't exists or Email is wrong! Try Again"
+                    });
+                }
+ 
+            }else {
+                res.json({
+                    "message":"The user Doesn't exists or Email is wrong! Try Again"
+                });
+            }
+        })
+
+    }catch(error) {
+        console.log(error);
+        res.json({
+            "message":"Some error occured on server"
+        });
+    }
+
+    // end
+    
+})
+
+
+
+
+
+
+
+
 
 module.exports = router;

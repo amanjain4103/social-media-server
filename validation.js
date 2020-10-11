@@ -38,8 +38,23 @@ const validateSignin = (data) => {
     // returns a message or just null
 }
 
+// email validation
+const emailValidationSchema = joi.object().keys({
+    email: joi.string().min(6).max(255).email().required()
+})
+
+const validateEmail = (data) => {
+    let responseOnEmailValidation = emailValidationSchema.validate(data);
+
+    if(responseOnEmailValidation.error) {
+        return (responseOnEmailValidation.error.details[0].message);
+    }
+
+    return null;
+}
 
 module.exports = {
     validateSignup: validateSignup,
-    validateSignin: validateSignin
+    validateSignin: validateSignin,
+    validateEmail: validateEmail
 }

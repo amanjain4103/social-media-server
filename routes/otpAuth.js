@@ -1,3 +1,5 @@
+const { default: Axios } = require("axios");
+
 const router = require("express").Router();
 const dotenv = require("dotenv").config();
 
@@ -21,10 +23,9 @@ const client = require("twilio")(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN
 
 
 // responses you can get
-//      invalidPhoneNumber
 //      otpSent
-//      otpNotSent
-//      requestError
+//      otp can't be sent, Check the credentials again, if the Problem persist then may be developers limit exceeded.
+//      There is a request error! Please Try Again!
 
 //send an otp
 router.post("/send",(req,res) => {
@@ -48,29 +49,36 @@ router.post("/send",(req,res) => {
                     });
                 }else {
                     res.status(200).json({
-                        "message":"otpNotSent"
+                        "message":"otp can't be sent, Check the credentials again, if the Problem persist then may be developers limit exceeded."
                     });
                 }
+            })
+            .catch((error) => {
+                res.json({
+                    "message":"Invalid Phone Number"
+                })
             })
     
     }
     catch (error) {
         console.log(error)
         res.status(500).json({
-            "message":"requestError"
+            "message":"There is a request error! Please Try Again!"
         });
     }
 
 })
 
 // responses you can get
-//      invalidPhoneNumberOrCode
-//      otpVerified
+//      redirect responses from /users/signup
+//          different messages for error and "successfulSignup" for success in creating a user
+// 
 //      otpNotVerified
 //      requestError
 
 // recieves and verify the otp
 router.post("/verify",(req,res) => {
+
 
     try {
         
@@ -84,23 +92,37 @@ router.post("/verify",(req,res) => {
             })
             .then((data) => {
                 if(data.status === "approved") {
-                    res.status(200).json({
-                        "message":"otpVerified"
-                    });
+                    // otp is verified here so adding the user
+
+                    // 307 will make a post request because /otp/verify is also post
+                    //  /users/signup makes a new user and send the appropriate response  
+                    res.redirect(307,`/users/signup?firstName=${req.body.firstName}&lastName=${req.body.lastName}&email=${req.body.email}&password=${req.body.password}`);
+
+                    // res.status(200).json({
+                    //     "message":"otpVerified"
+                    // });
+
                 }else {
-                    console.log(data)
+                    // console.log(data)
                     res.status(200).json({
-                        "message":"otpNotVerified"
+                        "message":"Wrong Credentials! OTP not verified, create a new OTP and try again"
                     });
                 }
+            })
+            .catch((error) => {
+                res.json({
+                    "message":"Wrong Credentials! OTP not verified, create a new OTP and try again"
+                })
             })
             
         
     } catch (error) {
         res.status(500).json({
-            "message":"requestError"
+            "message":"There is a request error! Please Try Again!"
         });
     }
+
+    
 
 })
 
