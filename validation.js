@@ -6,7 +6,7 @@ const joi = require("@hapi/joi");
 const signupValidationSchema = joi.object().keys({
     firstName: joi.string().min(1).required(),
     lastName: joi.string().min(1).required(),
-    email: joi.string().min(6).required().email() ,
+    email: joi.string().email().min(6).required() ,
     password: joi.string().min(6).required()
 })
 

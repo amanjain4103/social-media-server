@@ -1,5 +1,3 @@
-const { default: Axios } = require("axios");
-
 const router = require("express").Router();
 const dotenv = require("dotenv").config();
 

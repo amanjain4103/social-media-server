@@ -21,97 +21,108 @@ router.get("/", (req,res) => {
 // signup here
 router.post("/signup",(req,res) => {
 
-    // this will handle redirect, using this way to make it more flexible
-    // you can use req.body directly while posting /users/signup or use query string while redirect
-    if(req.query.firstName) {
-        req.body = {
-            firstName: req.query.firstName,
-            lastName: req.query.lastName,
-            email: req.query.email,
-            password: req.query.password
-        }
-    }
+    try {
 
-    // validation
-    var validationMessage = validateSignup(req.body);
-    if(validationMessage) {
-        res.json({
-            "message":validationMessage
-        });
-    }
-
-    // hashing password
-            try {
-                User.findOne({email: req.body.email},"_id", (errorWhileFinding,result) => { 
-
-                    if (errorWhileFinding){ 
-                        // console.log(err)
-                        // console.log("error occured while finding Data!")
-                        res.json({
-                            "message":"error occured while Finding Data!"
-                        });
-                    } 
-                    
-                    if(result) { 
-                        // console.log(result)
-                        res.json({
-                            "message":"User Email already exists, Try to signin."
-                        });
-                
-                    }else {
-                        // the flow comes here when no user found for the provided data, so now we can create a new user
-
-
-                        //hashing password
-                        bcrypt.hash(req.body.password, 10, (errorWhileEncypting, hashedPassword)=> {
-                            if(errorWhileEncypting) {
-                                res.json({
-                                    "message":"error while encrypting password, Try again!"
-                                });
-                            }else {
-                                //password is successfully hashed now
-                            
-                                // creating a new user
-                                const newUser = new User({
-                                    firstName: req.body.firstName,
-                                    lastName: req.body.lastName,
-                                    email: req.body.email,
-                                    password: hashedPassword,
-                                    avatarSrc: "https://static.thenounproject.com/png/363640-200.png"
-                                    
-                                })
-
-                                newUser.save((errorWHileSaving,doc) => {
-                                    if(doc) {
-                                        // console.log(doc);
-                                        res.json({
-                                            "message":"successfulSignup"
-                                        });
-                                    }else {
-                                        // console.log(errorWHileSaving)
-                                        // console.log("error occured while Saving Data!")
-                                        res.json({
-                                            "message":"error occured while Saving Data!"
-                                        });
-                                    }
-                                })
     
-                            }
-                        })
 
-                    }
-
-
-                })
-
-            }catch(error) {
-                // console.log(error);
-                res.json({
-                    "message":"error occured at server! Please try again later"
-                });
+        // this will handle redirect, using this way to make it more flexible
+        // you can use req.body directly while posting /users/signup or use query string while redirect
+        if(req.query.firstName) {
+            req.body = {
+                firstName: req.query.firstName,
+                lastName: req.query.lastName,
+                email: req.query.email,
+                password: req.query.password
             }
+        }
+
+        // validation
+        var validationMessage = validateSignup(req.body);
+        if(validationMessage) {
+            res.json({
+                "message":validationMessage
+            });
+        }
+
+        // hashing password
+                try {
+                    User.findOne({email: req.body.email},"_id", (errorWhileFinding,result) => { 
+
+                        if (errorWhileFinding){ 
+                            // console.log(err)
+                            // console.log("error occured while finding Data!")
+                            res.json({
+                                "message":"error occured while Finding Data!"
+                            });
+                        } 
+                        
+                        if(result) { 
+                            // console.log(result)
+                            res.json({
+                                "message":"User Email already exists, Try to signin."
+                            });
+                    
+                        }else {
+                            // the flow comes here when no user found for the provided data, so now we can create a new user
+
+
+                            //hashing password
+                            bcrypt.hash(req.body.password, 10, (errorWhileEncypting, hashedPassword)=> {
+                                if(errorWhileEncypting) {
+                                    res.json({
+                                        "message":"error while encrypting password, Try again!"
+                                    });
+                                }else {
+                                    //password is successfully hashed now
+                                
+                                    // creating a new user
+                                    const newUser = new User({
+                                        firstName: req.body.firstName,
+                                        lastName: req.body.lastName,
+                                        email: req.body.email,
+                                        password: hashedPassword,
+                                        avatarSrc: "https://static.thenounproject.com/png/363640-200.png"
+                                        
+                                    })
+
+                                    newUser.save((errorWHileSaving,doc) => {
+                                        if(doc) {
+                                            // console.log(doc);
+                                            res.json({
+                                                "message":"successfulSignup"
+                                            });
+                                        }else {
+                                            // console.log(errorWHileSaving)
+                                            // console.log("error occured while Saving Data!")
+                                            res.json({
+                                                "message":"error occured while Saving Data!"
+                                            });
+                                        }
+                                    })
+        
+                                }
+                            })
+
+                        }
+
+
+                    })
+
+                }catch(error) {
+                    // console.log(error);
+                    res.json({
+                        "message":"error occured at server! Please try again later"
+                    });
+                }
+
+    }catch(error) {
+        res.json({
+            "message":"OOps! server malfunctioned. Please try again!"
+        })
+    }
 
 })
+
 
 router.post("/signin",(req,res) => {
     
@@ -199,75 +210,76 @@ router.post("/signin",(req,res) => {
     }catch(error) {
         console.log(error);
         res.json({
-            "message":"Some error occured on server"
+            "message":"Some Problem From Our side, Please Try Again!!!"
         });
     }
 })
 
 router.get("/getuser", (req,res) => {
     
-    console.log(req.query);
-    
-    // validation
-    var validationMessage = validateEmail(req.query);
-    if(validationMessage) {
-        res.json({
-            "message":validationMessage
-        });
-    }
-    
-    const userEmail = req.query.email;
-
-    // start
-
+    // console.log(req.query);
     try {
+        // validation
+        var validationMessage = validateEmail(req.query);
+        if(validationMessage) {
+            res.status(200).json({
+                "message":validationMessage
+            });
+        }else {
 
-        User.findOne({"email":userEmail},(errorWhileFinding,userData) => {
-            
-            if(errorWhileFinding) {
-                // console.log("Can't compare with database right now! Please try again later");
-                res.json({
-                    "message":"Can't compare with database right now! Please try again later"
-                });
-            }else if(userData) {
+            const userEmail = req.query.email;
 
-                if(userData!==null) {
-                    if(userData!=="") {
+        
+            console.log(req.query);
 
-                        res.json({
-                            "message":"userDataFound",
-                            "firstName":userData.firstName,
-                            "lastName":userData.lastName,
-                            "email":userData.email,
-                            "avatarSrc":userData.avatarSrc,
-                            "numberOfPosts":userData.numberOfPosts,
-                            "numberOfLikes":userData.numberOfLikes,
-                            "posts":userData.posts
-                            
-                        });
+            User.findOne({"email":userEmail},(errorWhileFinding,userData) => {
+                
+                if(errorWhileFinding) {
+                    // console.log("Can't compare with database right now! Please try again later");
+                    res.json({
+                        "message":"Can't compare with database right now! Please try again later"
+                    });
+                }else if(userData) {
 
+                    if(userData!==null) {
+                        if(userData!=="") {
+
+                            res.json({
+                                "message":"userDataFound",
+                                "firstName":userData.firstName,
+                                "lastName":userData.lastName,
+                                "email":userData.email,
+                                "avatarSrc":userData.avatarSrc,
+                                "numberOfPosts":userData.numberOfPosts,
+                                "numberOfLikes":userData.numberOfLikes,
+                                "posts":userData.posts
+                                
+                            });
+
+                        }else {
+                            res.json({
+                                "message":"The user Doesn't exists or Email is wrong! Try Again"
+                            });
+                        }
                     }else {
                         res.json({
                             "message":"The user Doesn't exists or Email is wrong! Try Again"
                         });
                     }
+    
                 }else {
                     res.json({
                         "message":"The user Doesn't exists or Email is wrong! Try Again"
                     });
                 }
- 
-            }else {
-                res.json({
-                    "message":"The user Doesn't exists or Email is wrong! Try Again"
-                });
-            }
-        })
+            })
+
+        }
 
     }catch(error) {
-        console.log(error);
+        // console.log(error);
         res.json({
-            "message":"Some error occured on server"
+            "message":"Some Problem From Our side, Please Try Again!!!"
         });
     }
 
@@ -275,7 +287,34 @@ router.get("/getuser", (req,res) => {
     
 })
 
+router.get("/get-all-users", (req,res) => {
 
+    User.find({}, "email avatarSrc",(errorWhileFetchingUsers, doc) => {
+        if(errorWhileFetchingUsers) {
+            res.json({
+                "message":"encountered an error while Fetching users from DB."
+            })
+        }else {
+            if(doc!==null) {
+                if(doc!=="") {
+                    res.json({
+                        "message":"usersFetchedSuccessfully",
+                        usersList: doc
+                    })
+                }else {
+                    res.json({
+                        "message":"Its weird, didn't got any Users!"
+                    })
+                }
+            }else {
+                res.json({
+                    "message":"Its weird, didn't got any Users!"
+                })
+            }
+        }
+    })
+
+})
 
 
 

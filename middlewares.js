@@ -5,7 +5,7 @@ const isLoggedInMiddleware = (req,res,next) => {
 
     // when there is not token
     if(!token) {
-        return res.status(401).send("access denued log in first");
+        return res.status(401).send("access denied log in first");
     }
 
     // retriving token data in jwt
