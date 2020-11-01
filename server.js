@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const server = require("http").Server(app);
 const otpAuthRoutes = require("./routes/otpAuth");
 const usersRoute = require("./routes/usersRoute");
 const securedRoute = require("./routes/securedRoute");
@@ -22,60 +23,78 @@ mongoose.connect(process.env.DB_CONNECTION_STRING,
     }
 )
 
+// video call functionality
+const {ExpressPeerServer} = require("peer")
+const peerServer = ExpressPeerServer(server, {
+    debug:true
+})
+app.use("/peerjs",peerServer);
+
 // socket.io 
-const io = require("socket.io")(8001);
-const msgdb = [{"email":"you","message":"connected"}];
+const io = require("socket.io")(server);
+
 io.on("connection", socket => {
 
     const id= socket.handshake.query.id;
     socket.join(id);
+    console.log("connected")
+
+    socket.on("join-room-on-video-call",(roomId,userId) => {
+        socket.join(roomId)
+        socket.to(roomId).broadcast.emit("user-connected-on-video-call",userId);
+        socket.broadcast.emit("user-connected-on-video-call",userId);
+    })
+
+
 
     socket.emit("connection-establish",{"roomId":id,"message":"connected successfully"});
+
     socket.on("send-chat-message", messageObj => {
-        // msgdb.push({...messageObj})
-        
+
         // save messages to db
-        Message.findOneAndUpdate({"roomId":id},{$push: {"chatMessages":messageObj} },(errorWhileSavingNewChats,doc)=> {
-            if(errorWhileSavingNewChats) {
-                // res.json({
-                //     "message":"OOps!! some error occured while saving chats"
-                // })
-            }else {
-                if(doc!==null) {
-                    if(doc!=="") {
-                        console.log(messageObj)
-                    }else {
-                        // some problem with fetching doc otherwise it exists
-                    }
+        try {
+
+            Message.findOneAndUpdate({"roomId":id},{$push: {"chatMessages":messageObj} },(errorWhileSavingNewChats,doc)=> {
+                
+                
+                
+                if(errorWhileSavingNewChats) {
+                    // res.json({
+                    //     "message":"OOps!! some error occured while saving chats"
+                    // })
                 }else {
-                    const newChat = new Message({
-                        "roomId":id,
-                        "chatMessages":[].push(messageObj)
-                    })
-                    newChat.save();
+                    if(doc!==null) {
+                        if(doc!=="") {
+                            // message must be added to database
+                            // console.log(messageObj)
+                        }else {
+                            // some problem with fetching doc otherwise it exists
+                        }
+                    }else {
+                        const newChat = new Message({
+                            "roomId":id,
+                            "chatMessages":[].push(messageObj)
+                        })
+                        newChat.save();
+                    }
+                    
                 }
-                // if(doc!==null) {
-                //     if(doc!=="") {
-                //         res.json({
-                //             "message":"savedChats",
-                //             "totalChatMessages":totalchats
-                //         })
-                //     }else {
-                //         res.json({
-                //             "message":"not able to find the chat Conversations."
-                //         })
-                //     }
-                // }else {
-                //     res.json({
-                //         "message":"not able to find the chat Conversations."
-                //     })
-                // }
-            }
-        })
+            })
+        }catch(error) {
+            // some error must be encountered but I used try catch so that server won't crash on in apropriate conditions
+        }
         //message saved
 
         socket.broadcast.emit("chat-message", messageObj);
     })
+
+    // socket.on("join-video-call", (roomId, userId) => {
+    //     console.log(roomId+ " "+ userId);   
+    //     socket.join(roomId);
+        
+    // })
+
+
 })
 
 
@@ -96,7 +115,7 @@ app.get("/",(req,res) => {
 })
 
 const port = process.env.PORT || 8000;
-app.listen(port, () => {
+server.listen(port, () => {
     console.log("server up and running");
 })
 

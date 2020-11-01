@@ -94,6 +94,7 @@ router.post("/verify",(req,res) => {
 
                     // 307 will make a post request because /otp/verify is also post
                     //  /users/signup makes a new user and send the appropriate response  
+                    console.log(req.body);
                     res.redirect(307,`/users/signup?firstName=${req.body.firstName}&lastName=${req.body.lastName}&email=${req.body.email}&password=${req.body.password}`);
 
                     // res.status(200).json({
